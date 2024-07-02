@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Checker Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            height: 600px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            height: 100px; /* Fixed height for header */
+        }
+
+        .success-header {
+            background-color: #b9e59f;
+            color: #333;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            height: 100px; /* Fixed height for success-header */
+        }
+
+        .failed-header {
+            background-color: #f8b9b9;
+            color: #333;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            height: 100px; /* Fixed height for failed-header */
+        }
+
+        #success-result, #failed-result {
+            flex: 1;
+            overflow: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+
+        .result-box {
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            overflow: auto; /* Enable scrolling if content exceeds height */
+        }
+
+        .success {
+            background-color: #b9e59f;
+            height: calc(40% - 100px); /* Calculate height based on container minus headers */
+        }
+
+        .failed {
+            background-color: #f8b9b9;
+            height: calc(30% - 100px); /* Calculate height based on container minus headers */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>URL Checker Results</h1>
+            <p>Live status of randomly generated URLs videy.co</p>
+        </div>
+        
+        <div class="success-header">
+            <h2>Successful Results</h2>
+            <div id="success-result"></div>
+        </div>
+        
+        <div class="failed-header">
+            <h2>Failed Results</h2>
+            <div id="failed-result"></div>
+        </div>
+    </div>
+
+    <script>
+        var successfulResults = []; // Array to store successful results
+
+        function get_random_string(length) {
+            var chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            var randomString = '';
+            for (var i = 0; i < length; i++) {
+                var randomChar = chars.charAt(Math.floor(Math.random() * chars.length));
+                randomString += randomChar;
+            }
+            return randomString;
+        }
+
+        function check_url(url) {
+            return fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    var parser = new DOMParser();
+                    var doc = parser.parseFromString(html, 'text/html');
+                    var title = doc.querySelector('title').textContent || "No Title";
+                    return { status: response.status, title: title };
+                })
+                .catch(error => {
+                    console.error('Error fetching URL:', error);
+                    return { status: 500, title: "" };
+                });
+        }
+
+        function save_to_json() {
+            var jsonContent = JSON.stringify(successfulResults, null, 2);
+            var blob = new Blob([jsonContent], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
+
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'successful_results.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function generate_url() {
+            var randomString = get_random_string(8);
+            var url = `https://cdn.videy.co/${randomString}.mp4`;
+            console.log(`Checking URL: ${url}`);
+            check_url(url)
+                .then(data => {
+                    var resultDiv = document.createElement('div');
+                    resultDiv.className = 'result-box';
+
+                    if (data.status === 200) {
+                        resultDiv.classList.add('success');
+                        resultDiv.innerHTML = `
+                            <div><strong>Success:</strong> ${data.title}</div>
+                            <div><strong>URL:</strong> ${url}</div>
+                        `;
+                        successfulResults.push({ url: url, title: data.title }); // Store successful result
+                        save_to_json(); // Save to JSON file
+                        document.getElementById('success-result').appendChild(resultDiv);
+                    } else {
+                        resultDiv.classList.add('failed');
+                        resultDiv.innerHTML = `
+                            <div><strong>Failed:</strong> Status Code ${data.status}</div>
+                            <div><strong>URL:</strong> ${url}</div>
+                        `;
+                        document.getElementById('failed-result').appendChild(resultDiv);
+                    }
+
+                    document.getElementById('success-result').scrollTop = document.getElementById('success-result').scrollHeight;
+                    document.getElementById('failed-result').scrollTop = document.getElementById('failed-result').scrollHeight;
+                });
+        }
+
+        // Initial check on page load
+        generate_url();
+
+        // Optionally, you can call generate_url() again if you want to continue checking URLs after the initial check.
+        // generate_url();
+    </script>
+</body>
+</html>
