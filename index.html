@@ -9,7 +9,6 @@
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
             margin: 0;
-            height: 100vh;
             padding: 20px;
             box-sizing: border-box;
         }
@@ -17,13 +16,13 @@
         .container {
             max-width: 800px;
             margin: 20px auto;
-            height: 600px;
             background-color: #fff;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
+            height: 100vh; /* Adjust container height to full viewport height */
         }
 
         .header {
@@ -33,53 +32,34 @@
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 10px;
-            height: 100px; /* Fixed height for header */
         }
 
-        .success-header {
+        .success-header, .failed-header {
             background-color: #b9e59f;
             color: #333;
             text-align: center;
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 10px;
-            height: 30px; /* Fixed height for success-header */
+            flex: 1; /* Take remaining space */
         }
 
         .failed-header {
             background-color: #f8b9b9;
-            color: #333;
-            text-align: center;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 10px;
-            height: 30px; /* Fixed height for failed-header */
-        }
-
-        #success-result, #failed-result {
-            flex: 1;
-            overflow: auto;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: #fff;
         }
 
         .result-box {
             border-bottom: 1px solid #ccc;
+            padding: 10px;
             margin-bottom: 10px;
-            padding-bottom: 10px;
+        }
+
+        .success, .failed {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 5px;
             overflow: auto; /* Enable scrolling if content exceeds height */
-        }
-
-        .success {
-            background-color: #b9e59f;
-            height: calc(40% - 100px); /* Calculate height based on container minus headers */
-        }
-
-        .failed {
-            background-color: #f8b9b9;
-            height: calc(30% - 100px); /* Calculate height based on container minus headers */
+            flex: 1; /* Take remaining space */
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
