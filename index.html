@@ -43,7 +43,7 @@
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 10px;
-            height: 100px; /* Fixed height for success-header */
+            height: 30px; /* Fixed height for success-header */
         }
 
         .failed-header {
@@ -53,7 +53,7 @@
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 10px;
-            height: 100px; /* Fixed height for failed-header */
+            height: 30px; /* Fixed height for failed-header */
         }
 
         #success-result, #failed-result {
@@ -82,12 +82,13 @@
             height: calc(30% - 100px); /* Calculate height based on container minus headers */
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>URL Checker Results</h1>
-            <p>Live status of randomly generated URLs videy.co</p>
+            <p>Live status of randomly generated URLs</p>
         </div>
         
         <div class="success-header">
@@ -115,22 +116,22 @@
         }
 
         function check_url(url) {
-            return fetch(url)
+            return axios.get(url)
                 .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.text();
-                })
-                .then(html => {
+                    var html = response.data;
                     var parser = new DOMParser();
                     var doc = parser.parseFromString(html, 'text/html');
                     var title = doc.querySelector('title').textContent || "No Title";
                     return { status: response.status, title: title };
                 })
                 .catch(error => {
-                    console.error('Error fetching URL:', error);
-                    return { status: 500, title: "" };
+                    if (error.response) {
+                        console.error('HTTP error! Status:', error.response.status);
+                        return { status: error.response.status, title: "" };
+                    } else {
+                        console.error('Error fetching URL:', error.message);
+                        return { status: 500, title: "" };
+                    }
                 });
         }
 
@@ -177,6 +178,9 @@
 
                     document.getElementById('success-result').scrollTop = document.getElementById('success-result').scrollHeight;
                     document.getElementById('failed-result').scrollTop = document.getElementById('failed-result').scrollHeight;
+                })
+                .catch(error => {
+                    console.error('Error checking URL:', error);
                 });
         }
 
